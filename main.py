@@ -1,17 +1,6 @@
-from window import Window, Cell, Point, Line
+from window import Window, Cell, Maze
 
 win = Window(800, 600)
-
-cell1 = Cell(5, 50, 5, 50, win)
-cell2 = Cell(50, 100, 50, 100, win)
-
-
-cell1.has_left_wall = False
-cell2.has_right_wall = False
-
-cell1.draw("black")
-cell2.draw("black")
-
-cell1.draw_move(cell2)
+maze = Maze(10, 10, 10, 10, 50, 50, win)
 
 win.wait_for_close()
