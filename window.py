@@ -48,7 +48,7 @@ class Line:
 
 
 class Cell:
-    def __init__(self, window, x1=0, x2=0, y1=0, y2=0):
+    def __init__(self, window=None, x1=0, x2=0, y1=0, y2=0):
         self.has_left_wall = True
         self.has_right_wall = True
         self.has_top_wall = True
@@ -65,26 +65,28 @@ class Cell:
         self._y1 = y1
         self._y2 = y2
 
-        if self.has_left_wall:
-            self._win.draw_line(
-                Line(Point(self._x1, self._y1), Point(self._x1, self._y2)),
-                "black",
-            )
-        if self.has_right_wall:
-            self._win.draw_line(
-                Line(Point(self._x2, self._y1), Point(self._x2, self._y2)),
-                "black",
-            )
-        if self.has_top_wall:
-            self._win.draw_line(
-                Line(Point(self._x1, self._y1), Point(self._x2, self._y1)),
-                "black",
-            )
-        if self.has_bottom_wall:
-            self._win.draw_line(
-                Line(Point(self._x1, self._y2), Point(self._x2, self._y2)),
-                "black",
-            )
+        if self._win:
+
+            if self.has_left_wall:
+                self._win.draw_line(
+                    Line(Point(self._x1, self._y1), Point(self._x1, self._y2)),
+                    "black",
+                )
+            if self.has_right_wall:
+                self._win.draw_line(
+                    Line(Point(self._x2, self._y1), Point(self._x2, self._y2)),
+                    "black",
+                )
+            if self.has_top_wall:
+                self._win.draw_line(
+                    Line(Point(self._x1, self._y1), Point(self._x2, self._y1)),
+                    "black",
+                )
+            if self.has_bottom_wall:
+                self._win.draw_line(
+                    Line(Point(self._x1, self._y2), Point(self._x2, self._y2)),
+                    "black",
+                )
 
     def draw_move(self, to_cell, undo=False):
         color = "red"
@@ -101,7 +103,7 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win):
+    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None):
         self.x1 = x1
         self.y1 = y1
         self.num_rows = num_rows
@@ -122,7 +124,6 @@ class Maze:
         for col in range(self.num_cols):
             for row in range(self.num_rows):
                 self._draw_cell(row, col)
-            self._cells.append(r)
 
     def _draw_cell(self, row, col):
         x1 = self.x1 + (row * self.cell_size_x)
@@ -134,5 +135,6 @@ class Maze:
         self._animate()
 
     def _animate(self):
-        self._win.redraw()
-        time.sleep(0.03)
+        if self._win:
+            self._win.redraw()
+            time.sleep(0.03)
