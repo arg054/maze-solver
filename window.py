@@ -50,12 +50,12 @@ class Line:
 
 
 class Cell:
-    def __init__(self, window=None, x1=None, x2=None, y1=None, y2=None, visited=False):
+    def __init__(self, window=None, x1=None, x2=None, y1=None, y2=None):
         self.has_left_wall = True
         self.has_right_wall = True
         self.has_top_wall = True
         self.has_bottom_wall = True
-        self.visited = visited
+        self.visited = False
         self._x1 = x1
         self._x2 = x2
         self._y1 = y1
@@ -143,11 +143,8 @@ class Maze:
         self.cell_size_y = cell_size_y
         self._win = win
         self._cells = []
-        self._create_cells()
         self.seed = seed
-
-        if self.seed:
-            self.seed = random.seed(seed)
+        self._create_cells()
 
     def _create_cells(self):
         for col in range(self.num_cols):
@@ -161,6 +158,13 @@ class Maze:
                 self._draw_cell(row, col)
 
         self._break_entrance_and_exit()
+
+        if self.seed is None:
+            self._break_walls_r(
+                random.randrange(self.num_rows), random.randrange(self.num_cols)
+            )
+        else:
+            self._break_walls_r(self.seed[0], self.seed[1])
 
     def _draw_cell(self, row, col):
         x1 = self.x1 + (row * self.cell_size_x)
@@ -181,114 +185,62 @@ class Maze:
             self.num_cols - 1,
         )
 
-    def _get_directions(self, row, col):
-        neighbors = []
-
-        # TODO redesign as a switch case?
-        if self._col(row - 1, col):
-            neighbors.append((row - 1, col))
-        else:
-            neighbors.append(None)
-        if self._col(row + 1, col):
-            neighbors.append((row + 1, col))
-        else:
-            neighbors.append(None)
-        if self._col(row, col - 1):
-            neighbors.append((row, col - 1))
-        else:
-            neighbors.append(None)
-        if self._col(row, col + 1):
-            neighbors.append((row, col + 1))
-        else:
-            neighbors.append(None)
-
-        return neighbors
-
     def _break_walls_r(self, row, col):
         self._cells[col][row].visited = True
 
         while True:
-            neighbors = self._get_directions(row, col)
+            neighbors = self._check_neighbors(row, col)
 
-            if not neighbors:
+            if len(neighbors) == 0:
                 self._cells[col][row].draw()
                 return
 
-            move_to = random(3)
-            if move_to:
-                # TODO break wall on current cell and on chosen neighbor cell
-                self._break_walls_r(move_to[0], move_to[1])
+            move_to = 0
+            if len(neighbors) > 1:
+                move_to = random.randrange(len(neighbors) - 1)
+
+            self._break_wall(
+                neighbors[move_to][0], neighbors[move_to][1], neighbors[move_to][2]
+            )
+            self._break_walls_r(neighbors[move_to][0], neighbors[move_to][1])
+
+    def _check_neighbors(self, row, col):
+        neighbors = []
+
+        if row > 0 and not self._cells[col][row - 1].visited:
+            neighbors.append((row - 1, col, "left"))
+        if row < self.num_rows - 1 and not self._cells[col][row + 1].visited:
+            neighbors.append((row + 1, col, "right"))
+        if col > 0 and not self._cells[col - 1][row].visited:
+            neighbors.append((row, col - 1, "up"))
+        if col < self.num_cols - 1 and not self._cells[col + 1][row].visited:
+            neighbors.append((row, col + 1, "down"))
+
+        return neighbors
+
+    def _break_wall(self, row, col, direction):
+        if direction == "left":
+            self._cells[col][row].has_right_wall = False
+            self._cells[col][row + 1].has_left_wall = False
+            self._draw_cell(row + 1, col)
+
+        if direction == "right":
+            self._cells[col][row].has_left_wall = False
+            self._cells[col][row - 1].has_right_wall = False
+            self._draw_cell(row - 1, col)
+        if direction == "up":
+            self._cells[col][row].has_bottom_wall = False
+            self._cells[col + 1][row].has_top_wall = False
+            self._draw_cell(row, col + 1)
+
+        if direction == "down":
+            self._cells[col][row].has_top_wall = False
+            self._cells[col - 1][row].has_bottom_wall = False
+            self._draw_cell(row, col - 1)
+
+        self._draw_cell(row, col)
 
     def _animate(self):
         if self._win:
             self._win.redraw()
-            time.sleep(0.03)
-
-
-"""
-            loop though adjacent col,row pairs
-                if exists
-                    if not visited
-                        add to neighbors
-
-            if not neighbors
-                draw self._cells[col][row].draw()
-                return
-            move_to = random(3)
-            if move_to:
-                self._break_walls_r(move_to[0], move_to[1])
-
-----------------
-def get_directions(self, row, col)
-    neighbors = []
-
-    if left_neighbor(row-1,col):
-        neighbors.append((row-1,col))
-    else:
-        neighbors.append(None)
-    if right_neighbor(row+1,col)
-        neighbors.append((row+1,col))
-    else:
-        neighbors.append(None)
-    if above_neighbor(row,col-1)
-        neighbors.append((row,col-1))
-    else:
-        neighbors.append(None)
-    if below_neighbor(row,col+1)
-        neighbors.append((row,col+1))
-    else:
-        neighbors.append(None)
-
-    return neighbors
-            
-----------------
-logic for random
-0-left
-1-right
-2-up
-3-down       
-----------------
-neighbor logic
-00	01	02	03	04
-10	11	12	13	14
-20	21	22	23	24
-
-left_neighbor(row-1,col)
-right_neighbor(row+1,col)
-above_neighbor(row,col-1)
-below_neighbor(row,col+1)
-----------------
-def _break_walls(self, current_cell, wall_to_break):
-    if wall_to_break == 0:
-        self._cells[current_cell(1)][current_cell(0)].has_left_wall = False
-        self._cells[current_cell(1)][current_cell(0)-1].has_right_wall = False
-    if wall_to_break == 1:
-        self._cells[current_cell(1)][current_cell(0)].has_right_wall = False
-        self._cells[current_cell(1)][current_cell(0)+1].has_left_wall = False
-    if wall_to_break == 2:
-        self._cells[current_cell(1)][current_cell(0)].has_right_wall = False
-        self._cells[current_cell(1)][current_cell(0)+1].has_left_wall = False
-    if wall_to_break == 3:
-        self._cells[current_cell(1)][current_cell(0)].has_right_wall = False
-        self._cells[current_cell(1)][current_cell(0)+1].has_left_wall = False
-"""
+            time.sleep(0.01)
