@@ -196,9 +196,7 @@ class Maze:
                 self._cells[col][row].draw()
                 return
 
-            move_to = 0
-            if len(neighbors) > 1:
-                move_to = random.randrange(len(neighbors) - 1)
+            move_to = random.randrange(len(neighbors))
 
             self._break_wall(
                 neighbors[move_to][0], neighbors[move_to][1], neighbors[move_to][2]
@@ -250,4 +248,4 @@ class Maze:
     def _animate(self):
         if self._win:
             self._win.redraw()
-            time.sleep(0.01)
+            time.sleep(0.001)
