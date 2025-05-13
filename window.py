@@ -146,6 +146,7 @@ class Maze:
         self.seed = seed
         self._create_cells()
 
+    # TODO implement seed properly, using random.seed()
     def _create_cells(self):
         for col in range(self.num_cols):
             r = []
@@ -203,6 +204,12 @@ class Maze:
                 neighbors[move_to][0], neighbors[move_to][1], neighbors[move_to][2]
             )
             self._break_walls_r(neighbors[move_to][0], neighbors[move_to][1])
+
+    def _reset_cells_visited(self):
+        for col in range(self.num_cols):
+            for row in range(self.num_rows):
+                if self._cells[col][row].visited:
+                    self._cells[col][row].visited = False
 
     def _check_neighbors(self, row, col):
         neighbors = []
