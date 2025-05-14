@@ -248,4 +248,56 @@ class Maze:
     def _animate(self):
         if self._win:
             self._win.redraw()
-            time.sleep(0.001)
+            time.sleep(0.005)
+
+    def solve(self):
+        self._solve_r(0, 0)
+
+    def _solve_r(self, row, col):
+        self._animate()
+        self._cells[col][row].visited = True
+
+        if self._cells[col][row] == self._cells[-1][-1]:
+            return True
+
+        if (
+            row > 0
+            and not self._cells[col][row - 1].visited
+            and not self._cells[col][row].has_left_wall
+        ):
+            self._cells[col][row].draw_move(self._cells[col][row - 1])
+            if self._solve_r(row - 1, col):
+                return True
+            self._cells[col][row].draw_move(self._cells[col][row - 1], True)
+
+        if (
+            row < self.num_rows - 1
+            and not self._cells[col][row + 1].visited
+            and not self._cells[col][row].has_right_wall
+        ):
+            self._cells[col][row].draw_move(self._cells[col][row + 1])
+            if self._solve_r(row + 1, col):
+                return True
+            self._cells[col][row].draw_move(self._cells[col][row + 1], True)
+
+        if (
+            col > 0
+            and not self._cells[col - 1][row].visited
+            and not self._cells[col][row].has_top_wall
+        ):
+            self._cells[col][row].draw_move(self._cells[col - 1][row])
+            if self._solve_r(row, col - 1):
+                return True
+            self._cells[col][row].draw_move(self._cells[col - 1][row], True)
+
+        if (
+            col < self.num_cols - 1
+            and not self._cells[col + 1][row].visited
+            and not self._cells[col][row].has_bottom_wall
+        ):
+            self._cells[col][row].draw_move(self._cells[col + 1][row])
+            if self._solve_r(row, col + 1):
+                return True
+            self._cells[col][row].draw_move(self._cells[col + 1][row], True)
+
+        return False
